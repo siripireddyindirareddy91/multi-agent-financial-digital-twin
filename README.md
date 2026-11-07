@@ -1,5 +1,9 @@
 # FINSTRESS AI
 
+Live application: https://multi-agent-financial-digital-twin.vercel.app
+
+Production storage: free Neon PostgreSQL, connected through Vercel. A stable production JWT secret is configured. The SQLite fallback described below applies only when DATABASE_URL is omitted. Automatic GitHub deployment linking needs repository access granted to the Vercel GitHub integration; direct CLI deployment is configured and works.
+
 Multi-Agent Financial Digital Twin & Stress Testing Platform. Functional research demonstration using **synthetic institution data**, transparent Python financial calculations and ten actual LangGraph agent nodes. It is not a validated regulatory or investment system.
 
 ## Run locally
