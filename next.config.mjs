@@ -1,0 +1,1 @@
+const nextConfig = { async rewrites() { const backend=process.env.API_BACKEND_URL || (process.env.NODE_ENV==='development'?'http://127.0.0.1:8000':null);return backend?[{source:'/api/:path*',destination:backend+'/api/:path*'}]:[] } }; export default nextConfig;

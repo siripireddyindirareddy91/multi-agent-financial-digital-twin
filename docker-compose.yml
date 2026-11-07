@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: finstress
+      POSTGRES_USER: finstress
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finstress-local-only}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finstress"]
+      interval: 5s
+      retries: 10
+  backend:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://finstress:${POSTGRES_PASSWORD:-finstress-local-only}@db:5432/finstress
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET before running Compose}
+      CORS_ORIGINS: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports: ["3000:3000"]
+    environment:
+      API_BACKEND_URL: http://backend:8000
+    depends_on: [backend]
+volumes:
+  postgres_data:

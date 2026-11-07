@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.*.local
+.vercel/
+__pycache__/
+*.pyc
+*.db
+.pytest_cache/
+.venv/
+*.tsbuildinfo
