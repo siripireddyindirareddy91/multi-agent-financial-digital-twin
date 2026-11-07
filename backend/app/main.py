@@ -1,4 +1,4 @@
-import os, json, secrets, hashlib, hmac, io, csv, threading, logging
+import os, json, secrets, hashlib, hmac, io, csv, threading, logging, uuid
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict, deque
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
@@ -27,10 +27,10 @@ def password_ok(p,stored): return hmac.compare_digest(password_hash(p,stored.spl
 def serialize(row): return {'id':row.id,**row.data,'created_at':row.created_at.isoformat(),'updated_at':row.updated_at.isoformat()}
 def audit(db,user,action,details): db.add(Audit(owner_id=user.id,data={'actor':user.email,'action':action,'details':details}))
 def seed_user(db,user):
-    twin=Twin(owner_id=user.id,data=TwinInput(name='Aurelia National Bank').model_dump()); db.add(twin)
+    twin=Twin(id=str(uuid.uuid5(uuid.NAMESPACE_URL,user.email+'/aurelia')),owner_id=user.id,data=TwinInput(name='Aurelia National Bank').model_dump()); db.add(twin)
     defaults=[('Baseline','baseline',2,3,0,4,0,0,0,0),('Moderate Economic Slowdown','moderate',-2,4,100,5,10,10,5,1),('Severe Financial Crisis','severe',-5,7,200,8,20,20,10,3),('Extreme Global Economic Shock','extreme',-8,10,300,12,35,30,20,6)]
     for name,severity,gdp,inflation,interest,unemployment,equity,estate,withdrawal,defaults_n in defaults:
-        db.add(Scenario(owner_id=user.id,data=ScenarioInput(name=name,severity=severity,gdp=gdp,inflation=inflation,interest=interest,unemployment=unemployment,equity_decline=equity,real_estate=estate,withdrawal=withdrawal,defaults=defaults_n,description='Synthetic research scenario.').model_dump()))
+        db.add(Scenario(id=str(uuid.uuid5(uuid.NAMESPACE_URL,user.email+'/'+severity)),owner_id=user.id,data=ScenarioInput(name=name,severity=severity,gdp=gdp,inflation=inflation,interest=interest,unemployment=unemployment,equity_decline=equity,real_estate=estate,withdrawal=withdrawal,defaults=defaults_n,description='Synthetic research scenario.').model_dump()))
     audit(db,user,'workspace.initialized','Synthetic institution and scenarios created')
 def initialize():
     global initialized
@@ -40,7 +40,7 @@ def initialize():
         Base.metadata.create_all(engine)
         with Session() as db:
             if os.getenv('ENABLE_DEMO','true').lower()=='true' and not db.scalar(select(User).where(User.email=='demo@finstress.ai')):
-                u=User(email='demo@finstress.ai',password=password_hash(DEMO_PASSWORD),role='manager'); db.add(u); db.flush(); seed_user(db,u); db.commit()
+                u=User(id=str(uuid.uuid5(uuid.NAMESPACE_URL,'demo@finstress.ai')),email='demo@finstress.ai',password=password_hash(DEMO_PASSWORD),role='manager'); db.add(u); db.flush(); seed_user(db,u); db.commit()
         initialized=True
 def db_session():
     initialize()
